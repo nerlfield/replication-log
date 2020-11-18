@@ -24,3 +24,10 @@ Properties and assumptions:
 - any RPC frameworks can be used for Master-Secondary communication (Sockets, language-specific RPC, HTTP, Rest, gRPC, …)
 - Master and Secondaries should run in Docker
 
+
+# How to run:
+
+For run master dockerfile:
+- build: `docker build -t master -f master.Dockerfile .`
+- run: `docker run -p 8000:8000 master`
+
