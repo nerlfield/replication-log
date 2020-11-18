@@ -12,7 +12,7 @@ class MessageModel(BaseModel):
 
 app = FastAPI()
 
-INMEMORY_MESSAGE_LIST = []
+INMEMORY_MESSAGE_LIST = ["test"]
 
 
 @app.get("/message")
