@@ -3,16 +3,21 @@ import logging
 from fastapi import FastAPI, Response
 from http import HTTPStatus
 from pydantic import BaseModel
-import requests
+import grequests
 
 logger = logging.getLogger("master")
 class MessageModel(BaseModel):
     message: str
 
 
-app = FastAPI()
+app = FastAPI(debug=True)
 
 INMEMORY_MESSAGE_LIST = ["test"]
+SECONDARIES = [
+    "http://127.0.0.1:8889/__message",
+    "http://127.0.0.1:8889/__message"
+]
+
 
 
 @app.get("/message")
@@ -20,10 +25,26 @@ def get_message():
     return INMEMORY_MESSAGE_LIST
 
 
+def replicate_to_secondaries(message):
+    rs = [grequests.post(secondary, json={'message': message.message}) for secondary in SECONDARIES]
+    results = grequests.map(rs)
+    return results
+
+def is_success_replication(results):
+    for result in results:
+        if not result:
+            return False
+    return True
+
 @app.post("/message")
 def post_message(message: MessageModel):
+
     INMEMORY_MESSAGE_LIST.append(message)
-    logging.info(message)
-    r = requests.post('http://secondary:8000/__message', json={'message': message.message + ' mastered!'})
-    print('r.status_code', r.status_code)
-    return Response(status_code=HTTPStatus.NO_CONTENT.value)
+    print(message)
+
+    replication_results = replicate_to_secondaries(message)
+    if is_success_replication(replication_results):
+        print('Successful replication!')
+        return Response(status_code=HTTPStatus.NO_CONTENT.value)
+    else:
+        return Response(status_code=HTTPStatus.SERVICE_UNAVAILABLE.value)
