@@ -1,9 +1,8 @@
 version: "3"
 services:
   master:
-    depends_on:
-      - secondary
-      - secondary2
+    environment:
+      - SECONDARIES_NAMES=secondary,secondary2
     build:
       context: .
       dockerfile: master.Dockerfile

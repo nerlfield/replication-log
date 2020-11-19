@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 import logging
 from fastapi import FastAPI, Response
@@ -13,12 +14,7 @@ class MessageModel(BaseModel):
 app = FastAPI(debug=True)
 
 INMEMORY_MESSAGE_LIST = ["test"]
-SECONDARIES = [
-    "http://127.0.0.1:8889/__message",
-    "http://127.0.0.1:8889/__message"
-]
-
-
+SECONDARIES = [f"http://{sec_name}:8000/__message" for sec_name in os.environ['SECONDARIES_NAMES'].split(sep=',')]
 
 @app.get("/message")
 def get_message():
