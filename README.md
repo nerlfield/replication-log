@@ -28,6 +28,13 @@ Properties and assumptions:
 # How to run:
 
 For run master dockerfile:
-- build: `docker build -t master -f master.Dockerfile .`
-- run: `docker run -p 8000:8000 master`
 
+## Master:
+
+- build: `docker build -t master -f master.Dockerfile .`
+- run: `docker run -p 5100:8000 master`
+
+## Secondary:
+
+- build: `docker build -t secondary -f secondary.Dockerfile .`
+- run: `docker run -p 5200:8000 secondary`
