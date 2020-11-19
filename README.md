@@ -27,7 +27,12 @@ Properties and assumptions:
 
 # How to run:
 
-For run master dockerfile:
+How to run docker-compose:
+
+- `docker-compose up --build`
+- for communicate between containers, you should use such url: `http://<docker_compose_service_name>:<service_internal_port>/`
+
+For run master/secondary dockerfile:
 
 ## Master:
 

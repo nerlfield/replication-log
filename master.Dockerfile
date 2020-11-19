@@ -5,5 +5,4 @@ COPY . /app/
 
 RUN pip install -r requirements.txt
 
-EXPOSE 5100
 CMD ["uvicorn", "master:app", "--host", "0.0.0.0"]

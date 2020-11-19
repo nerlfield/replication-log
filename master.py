@@ -24,6 +24,6 @@ def get_message():
 def post_message(message: MessageModel):
     INMEMORY_MESSAGE_LIST.append(message)
     logging.info(message)
-    r = requests.post('http://127.0.0.1:8889/__message', json={'message': message.message + ' mastered!'})
+    r = requests.post('http://secondary:8000/__message', json={'message': message.message + ' mastered!'})
     print('r.status_code', r.status_code)
     return Response(status_code=HTTPStatus.NO_CONTENT.value)
