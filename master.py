@@ -41,6 +41,6 @@ def post_message(message: MessageModel):
     replication_results = replicate_to_secondaries(message)
     if is_success_replication(replication_results):
         print('Successful replication!')
-        return Response(status_code=HTTPStatus.NO_CONTENT.value)
+        return Response('Successfull replication!', status_code=HTTPStatus.OK.value)
     else:
         return Response(status_code=HTTPStatus.SERVICE_UNAVAILABLE.value)
