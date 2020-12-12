@@ -23,6 +23,8 @@ services:
       - "5200:8000"
 
   secondary2:
+    environment:
+      - DELAY=10
     build:
       context: .
       dockerfile: secondary.Dockerfile

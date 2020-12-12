@@ -17,10 +17,10 @@ INMEMORY_MESSAGE_LIST = []
 DELAY = None if 'DELAY' not in os.environ else float(os.environ['DELAY'])
 
 
-
 @app.get("/message")
 def get_message():
     return INMEMORY_MESSAGE_LIST
+
 
 @app.post("/__message")
 def post_message(message: MessageModel):
@@ -32,4 +32,5 @@ def post_message(message: MessageModel):
         print(f'Delay completed!')
 
     INMEMORY_MESSAGE_LIST.append(message)
+    print(INMEMORY_MESSAGE_LIST)
     return Response(status_code=HTTPStatus.NO_CONTENT.value)

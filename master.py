@@ -5,6 +5,7 @@ from fastapi import FastAPI, Response
 from http import HTTPStatus
 from pydantic import BaseModel
 import grequests
+from threading import Thread
 
 logger = logging.getLogger("master")
 
@@ -15,9 +16,9 @@ class MessageModel(BaseModel):
 
 app = FastAPI(debug=True)
 
+
 INMEMORY_MESSAGE_LIST = ["test"]
 SECONDARIES = [f"http://{sec_name}:8000/__message" for sec_name in os.environ['SECONDARIES_NAMES'].split(sep=',')]
-#SECONDARIES = 'http://0.0.0.0:5200/__message', 'http://0.0.0.0:5300/__message'
 
 
 @app.get("/message")
@@ -40,15 +41,21 @@ def is_success_replication(results, write_concern):
             return False
     return True
 
+def threading_start(results, write_concern):
+    threadOfUpdates = Thread(target=is_success_replication, args=[results, 3])
+    threadOfUpdates.start()
 
 @app.post("/message")
 def post_message(message: MessageModel, write_concern: int):
     INMEMORY_MESSAGE_LIST.append(message)
-    print(message)
-    print(write_concern)
+    print(f'Input message in master: {message.message}')
+    print(f"With write concern: {write_concern}")
 
     replication_results = replicate_to_secondaries(message, write_concern)
+
+
     if is_success_replication(replication_results, write_concern):
+        threading_start(replication_results, write_concern)
         print('Successful replication!')
         return Response('Successfull replication!', status_code=HTTPStatus.OK.value)
     else:
