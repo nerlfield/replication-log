@@ -57,7 +57,7 @@ def exception_handler(r, stream=False):
     retr_timeout = 3
     while request.response.status_code == 500:
         time.sleep(retr_timeout)
-        retr_timeout = retr_timeout**2
+        retr_timeout = retr_timeout*2
         print(f'Retry func with timeout: {retr_timeout}')
         request = r.send(stream=stream)
     
