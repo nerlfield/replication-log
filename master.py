@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 import logging
+import time
 from fastapi import FastAPI, Response
 from http import HTTPStatus
 from pydantic import BaseModel
@@ -17,9 +18,42 @@ class MessageModel(BaseModel):
 app = FastAPI(debug=True)
 
 
+
 INMEMORY_MESSAGE_LIST = ["test"]
 SECONDARIES = [f"http://{sec_name}:8000/__message" for sec_name in os.environ['SECONDARIES_NAMES'].split(sep=',')]
 
+
+HEALTHCKECK_LOOP_TIMEOUT=1
+UNHEALTHY_TIMEOUT=5
+HEALTH_STATUSES = {sec_name:'Suspected' for sec_name in os.environ['SECONDARIES_NAMES'].split(sep=',')}
+
+
+def healthcheck_loop(sec_name):
+    secondary_ping_uri = f"http://{sec_name}:8000/ping"
+    print("sec_name", sec_name)
+    while True:
+        request = grequests.get(secondary_ping_uri)
+        response = grequests.map([request])[0]
+
+        if not response or response.status_code != 204:
+            if HEALTH_STATUSES[sec_name] == "Suspected":
+                HEALTH_STATUSES[sec_name] = "Unhealthy"
+            else:
+                HEALTH_STATUSES[sec_name] = "Suspected"
+        else:
+            HEALTH_STATUSES[sec_name] = "Healthy"
+
+
+        time.sleep(HEALTHCKECK_LOOP_TIMEOUT)
+
+for sec_name in os.environ['SECONDARIES_NAMES'].split(sep=','):
+    Thread(target=healthcheck_loop, args=[sec_name]).start()
+
+
+@app.get("/health")
+def health():
+    """Reports secondaries' statuses"""
+    return HEALTH_STATUSES
 
 @app.get("/message")
 def get_message():

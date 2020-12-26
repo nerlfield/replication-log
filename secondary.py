@@ -16,6 +16,12 @@ app = FastAPI(debug=True)
 INMEMORY_MESSAGE_LIST = []
 DELAY = None if 'DELAY' not in os.environ else float(os.environ['DELAY'])
 
+@app.get("/ping")
+def ping():
+    if DELAY is not None and DELAY > 0:
+        time.sleep(DELAY)
+    return Response(status_code=HTTPStatus.NO_CONTENT.value) 
+
 
 @app.get("/message")
 def get_message():
