@@ -14,7 +14,12 @@ class MessageModel(BaseModel):
     is_blocked: bool = False
 
 
-app = FastAPI(debug=True)
+if (os.environ.get('BREAK', None) != None):
+    print('terminating the program because flag was passed')
+    exit(1)
+    pass
+else:
+    app = FastAPI(debug=True)
 
 
 INMEMORY_MESSAGE_LIST = []
