@@ -41,7 +41,7 @@ def imap(requests, stream=False, size=2, exception_handler=None):
     ex_reqs = []
 
     for request in pool.imap_unordered(send, requests):
-        if request.response.status_code == 500:
+        if not request or not request.response or request.response.status_code == 500:
             ex_reqs.append(request)
             continue
 
@@ -57,7 +57,7 @@ def imap(requests, stream=False, size=2, exception_handler=None):
 def exception_handler(r, stream=False):
     request = r.send(stream=stream)
     retr_timeout = 3
-    while request.response.status_code == 500:
+    while not request or not request.response or request.response.status_code == 500:
         time.sleep(retr_timeout)
         retr_timeout = retr_timeout*2
         print(f'Retry func with timeout: {retr_timeout}')
@@ -87,6 +87,10 @@ def healthcheck_loop(sec_name):
 for sec_name in os.environ['SECONDARIES_NAMES'].split(sep=','):
     Thread(target=healthcheck_loop, args=[sec_name]).start()
 
+
+def is_quorum():
+    n_avaliable_nodes = len([s for s in HEALTH_STATUSES.values() if s != "Unhealthy"])
+    return n_avaliable_nodes > 1
 
 def replicate_to_secondaries(message, write_concern, id_):
     rs = [grequests.post(secondary, json={'message': message.message, 'id': id_, 'is_blocked': message.is_blocked}, timeout=SECONDARY_RESPONSE_TIMEOUT) for secondary in SECONDARIES]
@@ -125,12 +129,16 @@ def post_message(message: MessageModel, write_concern: int):
     INMEMORY_MESSAGE_LIST.append(message)
     print(f'Input message in master: {message.message}')
     print(f"With write concern: {write_concern}")
+    
+    if is_quorum():
+        replication_results = replicate_to_secondaries(message, write_concern, message_number)
 
-    replication_results = replicate_to_secondaries(message, write_concern, message_number)
-
-    if is_success_replication(replication_results, write_concern):
-        threading_start(replication_results, write_concern)
-        print('Successful replication!')
-        return Response('Successfull replication!', status_code=HTTPStatus.OK.value)
+        if is_success_replication(replication_results, write_concern):
+            threading_start(replication_results, write_concern)
+            print('Successful replication!')
+            return Response('Successfull replication!', status_code=HTTPStatus.OK.value)
+        else:
+            return Response(status_code=HTTPStatus.SERVICE_UNAVAILABLE.value)
     else:
-        return Response(status_code=HTTPStatus.SERVICE_UNAVAILABLE.value)
+        error_message = f"Can't append message. No quorum. Secondaries' health: {HEALTH_STATUSES}"
+        return Response(error_message, status_code=418)
