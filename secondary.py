@@ -40,7 +40,12 @@ def ping():
 
 @app.get("/message")
 def get_message():
-    return INMEMORY_MESSAGE_LIST
+    res = []
+    for m in INMEMORY_MESSAGE_LIST:
+        if m == None: 
+            break
+        res.append(m)
+    return res
 
 
 @app.post("/__message")
