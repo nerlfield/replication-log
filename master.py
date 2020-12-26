@@ -38,17 +38,19 @@ def imap(requests, stream=False, size=2, exception_handler=None):
     def send(r):
         return r.send(stream=stream)
 
+    ex_reqs = []
+
     for request in pool.imap_unordered(send, requests):
         if request.response.status_code == 500:
-            ex_result = exception_handler(request, stream)
-            if ex_result is not None:
-                yield ex_result
+            ex_reqs.append(request)
             continue
 
         if request.response is not None:
             yield request.response
-            
 
+    for req in ex_reqs:
+        yield exception_handler(req, stream)
+        
     pool.join()
 
 
