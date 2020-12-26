@@ -19,6 +19,7 @@ app = FastAPI(debug=True)
 
 
 
+message_number = -1
 INMEMORY_MESSAGE_LIST = ["test"]
 SECONDARIES = [f"http://{sec_name}:8000/__message" for sec_name in os.environ['SECONDARIES_NAMES'].split(sep=',')]
 
@@ -60,8 +61,8 @@ def get_message():
     return INMEMORY_MESSAGE_LIST
 
 
-def replicate_to_secondaries(message, write_concern):
-    rs = [grequests.post(secondary, json={'message': message.message}) for secondary in SECONDARIES]
+def replicate_to_secondaries(message, write_concern, id_):
+    rs = [grequests.post(secondary, json={'message': message.message, 'id': id_}) for secondary in SECONDARIES]
     results = grequests.imap(rs)
 
     return results
@@ -81,11 +82,13 @@ def threading_start(results, write_concern):
 
 @app.post("/message")
 def post_message(message: MessageModel, write_concern: int):
+    global message_number
+    message_number += 1
     INMEMORY_MESSAGE_LIST.append(message)
     print(f'Input message in master: {message.message}')
     print(f"With write concern: {write_concern}")
 
-    replication_results = replicate_to_secondaries(message, write_concern)
+    replication_results = replicate_to_secondaries(message, write_concern, message_number)
 
 
     if is_success_replication(replication_results, write_concern):
