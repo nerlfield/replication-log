@@ -23,11 +23,11 @@ class MessageModel(BaseModel):
 
 app = FastAPI(debug=True)
 
-
+SECONDARY_RESPONSE_TIMEOUT=30
 message_number = -1
 INMEMORY_MESSAGE_LIST = ["test"]
 SECONDARIES = [f"http://{sec_name}:8000/__message" for sec_name in os.environ['SECONDARIES_NAMES'].split(sep=',')]
-HEALTHCKECK_LOOP_TIMEOUT=1
+HEALTHCKECK_LOOP_TIMEOUT=10
 UNHEALTHY_TIMEOUT=5
 HEALTH_STATUSES = {sec_name:'Suspected' for sec_name in os.environ['SECONDARIES_NAMES'].split(sep=',')}
 
@@ -89,7 +89,7 @@ for sec_name in os.environ['SECONDARIES_NAMES'].split(sep=','):
 
 
 def replicate_to_secondaries(message, write_concern, id_):
-    rs = [grequests.post(secondary, json={'message': message.message, 'id': id_, 'is_blocked': message.is_blocked}) for secondary in SECONDARIES]
+    rs = [grequests.post(secondary, json={'message': message.message, 'id': id_, 'is_blocked': message.is_blocked}, timeout=SECONDARY_RESPONSE_TIMEOUT) for secondary in SECONDARIES]
     results = imap(rs, exception_handler=exception_handler)
 
     return results

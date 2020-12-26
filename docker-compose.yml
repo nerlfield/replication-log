@@ -14,7 +14,8 @@ services:
   secondary:
     environment:
       - ERROR_K=3
-      - DELAY=3
+      - DELAY=1
+      # - BREAK="break"
     build:
       context: .
       dockerfile: secondary.Dockerfile
@@ -26,7 +27,7 @@ services:
   secondary2:
     environment:
       - ERROR_K=0
-      - DELAY=1
+      - DELAY=10
     build:
       context: .
       dockerfile: secondary.Dockerfile
