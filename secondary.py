@@ -10,6 +10,7 @@ logger = logging.getLogger("master")
 
 class MessageModel(BaseModel):
     message: str
+    id: int
 
 app = FastAPI(debug=True)
 
@@ -31,6 +32,8 @@ def post_message(message: MessageModel):
         time.sleep(DELAY)
         print(f'Delay completed!')
 
-    INMEMORY_MESSAGE_LIST.append(message)
+    if len(INMEMORY_MESSAGE_LIST) <= message.id:
+        INMEMORY_MESSAGE_LIST.extend([None for i in range(0, 1 + message.id - len(INMEMORY_MESSAGE_LIST))])
+        INMEMORY_MESSAGE_LIST[message.id] = message.message
     print(INMEMORY_MESSAGE_LIST)
     return Response(status_code=HTTPStatus.NO_CONTENT.value)
