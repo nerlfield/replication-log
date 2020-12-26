@@ -13,7 +13,7 @@ services:
   
   secondary:
     environment:
-      - ERROR_K=4
+      - ERROR_K=3
     build:
       context: .
       dockerfile: secondary.Dockerfile
