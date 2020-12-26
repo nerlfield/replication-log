@@ -49,6 +49,7 @@ def post_message(message: MessageModel):
 
     try:
         error_simulation(message.is_blocked)
+
         if DELAY is not None and DELAY > 0:
             print(f'Introducing delay {DELAY} sec..')
             time.sleep(DELAY)
@@ -56,8 +57,9 @@ def post_message(message: MessageModel):
 
         if len(INMEMORY_MESSAGE_LIST) <= message.id:
             INMEMORY_MESSAGE_LIST.extend([None for i in range(0, 1 + message.id - len(INMEMORY_MESSAGE_LIST))])
-            INMEMORY_MESSAGE_LIST[message.id] = message.message
-            
+
+        INMEMORY_MESSAGE_LIST[message.id] = message.message
+
         print(INMEMORY_MESSAGE_LIST)
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     except:
