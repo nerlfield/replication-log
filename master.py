@@ -90,7 +90,7 @@ for sec_name in os.environ['SECONDARIES_NAMES'].split(sep=','):
 
 def is_quorum():
     n_avaliable_nodes = len([s for s in HEALTH_STATUSES.values() if s != "Unhealthy"])
-    return n_avaliable_nodes > 1
+    return n_avaliable_nodes > 0
 
 def replicate_to_secondaries(message, write_concern, id_):
     rs = [grequests.post(secondary, json={'message': message.message, 'id': id_, 'is_blocked': message.is_blocked}, timeout=SECONDARY_RESPONSE_TIMEOUT) for secondary in SECONDARIES]
@@ -129,6 +129,7 @@ def post_message(message: MessageModel, write_concern: int):
     INMEMORY_MESSAGE_LIST.append(message)
     print(f'Input message in master: {message.message}')
     print(f"With write concern: {write_concern}")
+    print(HEALTH_STATUSES)
     
     if is_quorum():
         replication_results = replicate_to_secondaries(message, write_concern, message_number)
