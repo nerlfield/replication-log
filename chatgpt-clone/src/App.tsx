@@ -17,6 +17,8 @@ const App: React.FC = () => {
   const [activeId, setActiveId] = useState(conversations[0].id);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [systemPrompt, setSystemPrompt] = useState('Helpful');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const activeConv = conversations.find(c => c.id === activeId)!;
 
@@ -37,13 +39,30 @@ const App: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const assistantText = await sendMessage([...activeConv.messages, userMsg]);
+      const assistantText = await sendMessage(
+        [...activeConv.messages, userMsg],
+        systemPrompt
+      );
+
       const assistantMsg: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: assistantText,
+        content: '',
       };
+      const assistantId = assistantMsg.id;
       updateActiveConv(c => ({ ...c, messages: [...c.messages, assistantMsg] }));
+
+      // Stream characters
+      for (let i = 0; i < assistantText.length; i++) {
+        await new Promise(r => setTimeout(r, 25));
+        const partial = assistantText.slice(0, i + 1);
+        updateActiveConv(c => ({
+          ...c,
+          messages: c.messages.map(m =>
+            m.id === assistantId ? { ...m, content: partial } : m
+          ),
+        }));
+      }
     } catch (err) {
       const msg: Message = {
         id: crypto.randomUUID(),
@@ -72,16 +91,32 @@ const App: React.FC = () => {
       <ChatSidebar
         conversations={conversations}
         activeId={activeId}
-        onSelect={setActiveId}
-        onNewChat={handleNewChat}
+        onSelect={id => {
+          setActiveId(id);
+          setSidebarOpen(false);
+        }}
+        onNewChat={() => {
+          handleNewChat();
+          setSidebarOpen(false);
+        }}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <button
+          className="sidebar-toggle"
+          onClick={() => setSidebarOpen(true)}
+        >
+          ☰
+        </button>
         <ChatWindow
           messages={activeConv.messages}
           onSend={handleSend}
           isLoading={isLoading}
           onClear={handleClearChat}
           error={error}
+          systemPrompt={systemPrompt}
+          onSystemPromptChange={setSystemPrompt}
         />
       </div>
     </div>

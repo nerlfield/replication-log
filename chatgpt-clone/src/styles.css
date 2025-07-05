@@ -122,3 +122,59 @@ body {
   background: #a5b4fc;
   cursor: not-allowed;
 }
+
+.sidebar-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #ececf1;
+}
+
+@media (max-width: 640px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 20;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-toggle {
+    display: block;
+    margin: 0.5rem;
+  }
+}
+
+.copy-btn {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: #d1d5db;
+  cursor: pointer;
+  display: none;
+}
+
+.message-bubble:hover .copy-btn {
+  display: block;
+}
+
+.message-bubble {
+  position: relative;
+}
+
+.chat-input textarea {
+  flex: 1;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  background: transparent;
+  color: #d1d5db;
+  outline: none;
+}

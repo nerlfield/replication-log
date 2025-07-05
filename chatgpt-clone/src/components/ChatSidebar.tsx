@@ -7,6 +7,8 @@ interface ChatSidebarProps {
   activeId: string;
   onSelect: (id: string) => void;
   onNewChat: () => void;
+  open?: boolean;
+  onClose?: () => void;
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
@@ -14,13 +16,20 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   activeId,
   onSelect,
   onNewChat,
+  open,
+  onClose,
 }) => {
   return (
-    <div className="sidebar">
+    <div className={clsx('sidebar', open && 'open')}>
       <div className="sidebar-header">
         <button className="new-chat-btn" onClick={onNewChat}>
           + New Chat
         </button>
+        {onClose && (
+          <button className="new-chat-btn" onClick={onClose}>
+            ✕
+          </button>
+        )}
       </div>
       <div className="conversation-list">
         {conversations.map(conv => (

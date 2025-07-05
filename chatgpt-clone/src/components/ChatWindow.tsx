@@ -10,6 +10,8 @@ interface ChatWindowProps {
   isLoading: boolean;
   onClear: () => void;
   error?: string | null;
+  systemPrompt: string;
+  onSystemPromptChange: (prompt: string) => void;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -18,6 +20,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   isLoading,
   onClear,
   error,
+  systemPrompt,
+  onSystemPromptChange,
 }) => {
   const viewportRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,10 +34,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   return (
     <div className="chat-window">
-      <div style={{ padding: '0.5rem', borderBottom: '1px solid #444654' }}>
+      <div style={{ padding: '0.5rem', borderBottom: '1px solid #444654', display:'flex', gap:'0.5rem', alignItems:'center', flexWrap:'wrap' }}>
         <button className="new-chat-btn" onClick={onClear}>
           Clear Chat
         </button>
+        <select value={systemPrompt} onChange={e=>onSystemPromptChange(e.target.value)} style={{background:'#444654', color:'#ececf1', border:'none', padding:'0.5rem', borderRadius:'6px'}}>
+          <option value="Helpful">Helpful</option>
+          <option value="Sarcastic">Sarcastic</option>
+          <option value="Formal">Formal</option>
+          <option value="Emoji">Emoji</option>
+        </select>
       </div>
       <ScrollArea.Root className="chat-scroll-area">
         <ScrollArea.Viewport className="chat-viewport" ref={viewportRef}>
